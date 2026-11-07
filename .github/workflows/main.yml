@@ -1,0 +1,30 @@
+ name: Build Time Lag Esper Addon
+
+  on:
+    push:
+      branches: [ main ]
+    workflow_dispatch:
+
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Zero‑particle check    # ✅ Will pass (we use zero particles)
+          run: |
+            if grep -rniE "particle" src/main/java; then
+              echo "❌ Particle code found..."
+              exit 1
+            fi
+            echo "✅ No particle references."
+        - uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: '17'
+        - name: Build the mod
+          run: bash gradlew build --no-daemon
+        - name: Upload JAR artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: timelag-esper-addon
+            path: build/libs/*.jar
